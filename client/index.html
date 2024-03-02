@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Greeting Generator</title>
+</head>
+
+<body style="text-align: center;">
+    <div id="main-page">
+        <h1>Greeting Generator</h1>
+        <form id="Greeting-form">
+            <label for="event-type">Event Type:</label>
+            <select id="event-type" name="event-type" onchange="showHideInputs()">
+                <option value="birthday">Birthday</option>
+                <option value="wedding">Wedding</option>
+                <option value="goodbye">Goodbye</option>
+            </select>
+
+            <div id="age-input" style="display: block;">
+                <label for="age">Age:</label>
+                <input type="number" id="age" name="age">
+            </div>
+
+            <div id="family-input" style="display: none;">
+                <label for="family">Family:</label>
+                <input type="text" id="family" name="family">
+            </div>
+
+            <div id="person-input" style="display: none;">
+                <label for="person">Person:</label>
+                <input type="text" id="person" name="person">
+            </div>
+
+            <label for="atmosphere">Atmosphere:</label>
+            <select id="atmosphere" name="atmosphere">
+                <option value="happy">Happy</option>
+                <option value="exciting">Exciting</option>
+                <option value="amusing">Amusing</option>
+                <option value="sad">Sad</option>
+            </select><br />
+
+            <label for="length">Length:</label>
+            <select id="length" name="length">
+                <option value="short">Short</option>
+                <option value="medium">Medium</option>
+                <option value="long">Long</option>
+            </select><br />
+
+            <label>Style:</label>
+            <input type="radio" id="song" name="style" value="song"> <label for="song">Song</label>
+            <input type="radio" id="letter" name="style" value="letter"> <label for="letter">Letter</label><br />
+
+            <button type="button" style="margin: 50px;" onclick="generateGreeting()">Write me a greeting</button>
+        </form>
+    </div>
+
+    <div id="result-page" style="display: none;">
+        <h1>Generated Greeting</h1>
+        <label id="selected-options"></label><br />
+        <button style="margin: 30px;" onclick="showSettingsPage()">back to settings</button><br />
+        <label id="server-response"></label><br />
+        <button type="button" style="margin: 50px;" onclick="writeAnotherGreeting()">Write me another greeting</button>
+    </div>
+
+    <script>
+        function showHideInputs() {
+            var eventType = document.getElementById("event-type").value;
+            const age = document.getElementById("age-input");
+            const family = document.getElementById("family-input");
+            const person = document.getElementById("person-input");
+
+            if (eventType === "birthday") {
+                age.style.display = "block";
+                family.style.display = "none";
+                person.style.display = "none";
+            } else if (eventType === "wedding") {
+                age.style.display = "none";
+                family.style.display = "block";
+                person.style.display = "none";
+            } else if (eventType === "goodbye") {
+                age.style.display = "none";
+                family.style.display = "none";
+                person.style.display = "block";
+            }
+        }
+
+        function generateGreeting() {
+            const eventType = document.getElementById("event-type").value;
+            const age = document.getElementById("age").value;
+            const family = document.getElementById("family").value;
+            const person = document.getElementById("person").value;
+            const atmosphere = document.getElementById("atmosphere").value;
+            const length = document.getElementById("length").value;
+            const style = document.querySelector('input[name="style"]:checked') ? document.querySelector('input[name="style"]:checked').value : "";
+
+            if (!style) {
+                alert("Please fill in the style field.");
+                return;
+            }
+            if (eventType === "birthday" && !age) {
+                alert("Please fill in the age field.");
+                return;
+            } else if (eventType === "wedding" && !family) {
+                alert("Please fill in the family field.");
+                return;
+            } else if (eventType === "goodbye" && !person) {
+                alert("Please fill in the person field.");
+                return;
+            }
+
+            const url = `http://localhost:3000?eventType=${eventType}&age=${age}&family=${family}&person=${person}&atmosphere=${atmosphere}&length=${length}&style=${style}`;
+
+            const selectedOptionsList = document.getElementById("selected-options");
+            selectedOptionsList.innerHTML = `* Event Type: ${eventType} * ${eventType === "birthday" ? `Age: ${age}` : ""}${eventType === "wedding" ? `Family: ${family}` : ""}${eventType === "goodbye" ? `Person: ${person}` : ""} * Atmosphere: ${atmosphere} * Length: ${length} * Style: ${style}`;
+
+            document.getElementById("main-page").style.display = "none";
+            document.getElementById("result-page").style.display = "block";
+
+            fetchUrl(url);
+        }
+
+        function writeAnotherGreeting() {
+            const url = `http://localhost:3000/otherGreeting`;
+            fetchUrl(url);
+        }
+        function showSettingsPage() {
+            document.getElementById("result-page").style.display = "none";
+            document.getElementById("main-page").style.display = "block";
+        }
+        function fetchUrl(url) {
+            fetch(url)
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById("server-response").innerText = data;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                })
+        }
+    </script>
+</body>
+
+</html>
